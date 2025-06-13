@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Callback Spotify AnimeBeat</title>
+</head>
+<body>
+  <script>
+    // pega o 'code' da URL (query string)
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    // client_id e redirect_uri
+    const client_id = 'ec20a577d31245d585892eb73ea87675';
+    const redirect_uri = 'https://animebeat.vercel.app/callback.html';; 
+
+    if (!code) {
+      alert('Código de autorização não encontrado.');
+      window.location.href = 'index.html';
+    } else {
+      // toca o code pelo token com fetch POST na API do Spotify
+      fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + btoa(client_id + ':SEU_CLIENT_SECRET_AQUI') 
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: redirect_uri,
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.access_token){
+          localStorage.setItem('spotify_access_token', data.access_token);
+          //salva refresh_token e expiration 
+          window.location.href = 'index.html';
+        } else {
+          alert('Falha ao obter token: ' + (data.error || ''));
+          window.location.href = 'index.html';
+        }
+      })
+      .catch(() => {
+        alert('Erro na requisição do token');
+        window.location.href = 'index.html';
+      });
+    }
+  </script>
+</body>
+</html>
